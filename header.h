@@ -50,6 +50,9 @@ void print_frame_info(FRAME* frame, FILE* output);
 void print_ip_sc_dst(FRAME* frame, FILE* output);
 FRAME** filtre_protocol(FRAME* header, char* protocol, int* size);
 void print_first_full(FRAME** protocol_only, int size, FILE* output);
+int hex_to_dec_1(const u_char *frame_data, int index);
+int hex_to_dec(const u_char *frame_data, int starting_index);
+void print_ports(FRAME* frame, FILE *output);
 
 //from analyze_frame
 int is_ipv4(FRAME* frame, IP_ADRESS **adresses);

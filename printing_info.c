@@ -175,6 +175,14 @@ FRAME** filtre_protocol(FRAME* header, char* protocol, int* size){
     return protocol_only;
 }
 
+void print_ports(FRAME* frame, FILE *output){
+    int source =  hex_to_dec(frame->frame_data, 35);
+    int destination = hex_to_dec(frame->frame_data, 37);
+
+    fprintf(output, "Zdrojovy port = %d\n", source);
+    fprintf(output, "Cielovy port = %d\n", destination);
+}
+
 void print_first_full(FRAME** protocol_only, int size, FILE* output){
     IP_ADRESS* ip1s;
     IP_ADRESS* ip1d;
@@ -190,14 +198,13 @@ void print_first_full(FRAME** protocol_only, int size, FILE* output){
         for(int a = 0; a < 4; a++){
             ip1s->address[a] = protocol_only[i]->frame_data[26 + a];
         }
-        port1s = protocol_only[i]->frame_data[23];
 
         ip1d = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
         for(int a = 0; a < 4; a++){
             ip1d->address[a] = protocol_only[i]->frame_data[30 + a];
         }
-        port1s =  hex_to_dec_1(protocol_only[i]->frame_data, 34);
-        port1d = hex_to_dec_1(protocol_only[i]->frame_data, 36);
+        port1s =  hex_to_dec_1(protocol_only[i]->frame_data, 34 + protocol_only[i]->offset);
+        port1d = hex_to_dec_1(protocol_only[i]->frame_data, 36 + protocol_only[i]->offset);
 
         if( is_syn(protocol_only[i]) ){
             for(int j = 0; j < size; j++){
@@ -210,11 +217,17 @@ void print_first_full(FRAME** protocol_only, int size, FILE* output){
                 for(int a = 0; a < 4; a++){
                     ip2d->address[a] = protocol_only[j]->frame_data[30 + a];
                 }
-                port2s =  hex_to_dec_1(protocol_only[j]->frame_data, 34);
-                port2d = hex_to_dec_1(protocol_only[j]->frame_data, 36);
+                port2s =  hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
+                port2d = hex_to_dec_1(protocol_only[j]->frame_data, 36 + protocol_only[j]->offset);
 
                 if(are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) && is_fin(protocol_only[j])){
-                    fprintf(output, "Uplna komunikacia medzi %d a %d ramcami", protocol_only[i]->frame_number, protocol_only[j]->frame_number);
+                    fprintf(output, "Prvá úplná komunikácia je ohraničená:\n\n");
+                    fprintf(output, "Prvým SYN packetom:\n");
+                    print_ipv4_frame(protocol_only[i], output);
+
+                    fprintf(output, "\n\nPosledným FIN packetom:\n");
+                    print_ipv4_frame(protocol_only[j], output);
+                    fprintf(output, "--------------------------------------------------------------------------------------------\n");
                     return;
                 }
             }

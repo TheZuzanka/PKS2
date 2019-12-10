@@ -32,6 +32,7 @@ void print_ipv4_frame(FRAME *frame, FILE *output){
     fprintf(output, "IPV4\n");
 
     find_protocol(frame, output);
+    print_ports(frame, output);
     print_data(frame->frame_data, frame->frame_wrapper->caplen, output);
 }
 
