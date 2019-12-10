@@ -53,6 +53,7 @@ void print_first_full(FRAME** protocol_only, int size, FILE* output);
 int hex_to_dec_1(const u_char *frame_data, int index);
 int hex_to_dec(const u_char *frame_data, int starting_index);
 void print_ports(FRAME* frame, FILE *output);
+void print_first_not_full(FRAME** protocol_only, int size, FILE* output);
 
 //from analyze_frame
 int is_ipv4(FRAME* frame, IP_ADRESS **adresses);
@@ -75,8 +76,10 @@ int are_ip_same(IP_ADRESS* first, IP_ADRESS* second);
 //from utils.c
 void free_frames_list(FRAME* header);
 int are_same_comunication(IP_ADRESS* ip1s, IP_ADRESS* ip1d, IP_ADRESS* ip2s, IP_ADRESS* ip2d, int port1s, int port1d, int port2s, int port2d);
+int are_same_comunication_ack(IP_ADRESS* ip1s, IP_ADRESS* ip1d, IP_ADRESS* ip2s, IP_ADRESS* ip2d, int port1s, int port1d, int port2s, int port2d);
 
 //from handling_arp.c
 int is_syn(FRAME* frame);
 int is_fin(FRAME* frame);
 int is_reset(FRAME* frame);
+int is_syn_ack(FRAME *frame);

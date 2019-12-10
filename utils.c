@@ -24,3 +24,12 @@ int are_same_comunication(IP_ADRESS* ip1s, IP_ADRESS* ip1d, IP_ADRESS* ip2s, IP_
         return 0;
     }
 }
+
+int are_same_comunication_ack(IP_ADRESS* ip1s, IP_ADRESS* ip1d, IP_ADRESS* ip2s, IP_ADRESS* ip2d, int port1s, int port1d, int port2s, int port2d){
+    if(are_ip_same(ip2d, ip1d) && are_ip_same(ip1s, ip2s) && port2d == port1d && port2s == port1s){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}

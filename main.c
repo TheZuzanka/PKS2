@@ -16,6 +16,7 @@ int main() {
     }*/
 
     print_first_full(http_only, size, output);
+    print_first_not_full(http_only, size, output);
 
     close_txt_file(output);
     return 0;

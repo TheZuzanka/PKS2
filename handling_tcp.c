@@ -34,3 +34,14 @@ int is_reset(FRAME* frame){
         return 0;
     }
 }
+
+int is_syn_ack(FRAME *frame){
+    int flag_byte = frame->frame_data[47];
+
+    if((flag_byte & 18) == 18){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
