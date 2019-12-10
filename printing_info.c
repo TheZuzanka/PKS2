@@ -213,7 +213,7 @@ void print_first_full(FRAME** protocol_only, int size, FILE* output){
                 port2s =  hex_to_dec_1(protocol_only[j]->frame_data, 34);
                 port2d = hex_to_dec_1(protocol_only[j]->frame_data, 36);
 
-                if(are_ip_same(ip2d, ip1s) && port2d == port1s && is_fin(protocol_only[j])){
+                if(are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) && is_fin(protocol_only[j])){
                     fprintf(output, "Uplna komunikacia medzi %d a %d ramcami", protocol_only[i]->frame_number, protocol_only[j]->frame_number);
                     return;
                 }

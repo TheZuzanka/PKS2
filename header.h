@@ -71,6 +71,7 @@ int are_ip_same(IP_ADRESS* first, IP_ADRESS* second);
 
 //from utils.c
 void free_frames_list(FRAME* header);
+int are_same_comunication(IP_ADRESS* ip1s, IP_ADRESS* ip1d, IP_ADRESS* ip2s, IP_ADRESS* ip2d, int port1s, int port1d, int port2s, int port2d);
 
 //from handling_arp.c
 int is_syn(FRAME* frame);
