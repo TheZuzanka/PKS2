@@ -103,7 +103,7 @@ void print_data(const u_char *frame_data, int length, FILE *output) {
 
 void print_frame_info(FRAME *frame, FILE *output) {
     fprintf(output, "--------------------------------------------------------------------------------------------\n");
-    fprintf(output, "Cislo ramca = %d\n", frame->frame_number);
+    fprintf(output, "Sislo ramsa = %d\n", frame->frame_number);
     print_frame_length(frame, output);
     eth_or_802(frame, output);
     print_mac_addresses(frame->frame_data, output);
@@ -197,6 +197,8 @@ void print_first_full(FRAME **protocol_only, int size, FILE *output) {
     int port1d;
     int port2s;
     int port2d;
+    int number_of_all = 0;
+    int to_be_print_number = 0;
 
     for (int i = 0; i < size - 1; i++) {
         ip1s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
@@ -225,12 +227,19 @@ void print_first_full(FRAME **protocol_only, int size, FILE *output) {
                 port2s = hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
                 port2d = hex_to_dec_1(protocol_only[j]->frame_data, 36 + protocol_only[j]->offset);
 
-                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) &&
-                    is_fin(protocol_only[j])) {
-                    fprintf(output, "Prvá úplná komunikácia je ohraničená:\n\n");
-                    fprintf(output, "Prvým SYN packetom:\n");
-                    print_ipv4_frame(protocol_only[i], output);
+                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) ) {
+                    if(is_fin(protocol_only[j])){
+                        fprintf(output, "Prvá úplná komunikácia je ohraničená:\n\n");
+                        fprintf(output, "Prvým SYN packetom:\n");
+                        print_ipv4_frame(protocol_only[i], output);
+                        to_be_print_number++;
+                    }
+                    number_of_all++;
                 }
+                if (are_same_comunication_ack(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)){
+                    number_of_all++;
+                }
+
             }
             for (int j = i + 1; j < size; j++) {
                 ip2s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
@@ -247,7 +256,11 @@ void print_first_full(FRAME **protocol_only, int size, FILE *output) {
 
                 if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) ||
                     are_same_comunication_ack(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)) {
-                    print_ipv4_frame(protocol_only[j], output);
+
+                    if( (number_of_all < 20 || to_be_print_number < 10 || to_be_print_number > number_of_all - 10) && is_fin(protocol_only[j]) ==  0){
+                        print_ipv4_frame(protocol_only[j], output);
+                    }
+                    to_be_print_number++;
 
                     if (is_fin(protocol_only[j])) {
                         fprintf(output, "\n\nPosledným FIN packetom:\n");
@@ -267,12 +280,13 @@ void print_first_full(FRAME **protocol_only, int size, FILE *output) {
 
 void print_first_not_full(FRAME **protocol_only, int size, FILE *output){
     int first;
-    if(( first = find_first_not_full_packet(protocol_only, size, output) ) != -1){
-        print_not_full(protocol_only, size, output, first);
+    int num_of_all = 0;
+    if(( first = find_first_not_full_packet(protocol_only, size, output, &num_of_all) ) != -1){
+        print_not_full(protocol_only, size, output, first, num_of_all);
     }
 }
 
-int find_first_not_full_packet(FRAME **protocol_only, int size, FILE *output) {
+int find_first_not_full_packet(FRAME **protocol_only, int size, FILE *output, int* number_of_all) {
     IP_ADRESS *ip1s;
     IP_ADRESS *ip1d;
     IP_ADRESS *ip2s;
@@ -282,6 +296,7 @@ int find_first_not_full_packet(FRAME **protocol_only, int size, FILE *output) {
     int port2s;
     int port2d;
 
+    (*number_of_all) = 0;
     for (int i = 0; i < size - 1; i++) {
         ip1s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
         for (int a = 0; a < 4; a++) {
@@ -298,7 +313,7 @@ int find_first_not_full_packet(FRAME **protocol_only, int size, FILE *output) {
         if (is_syn(protocol_only[i]) && is_syn_ack(protocol_only[i]) != 1) {
             int test = protocol_only[i]->frame_number;
             //
-            for (int j = 0; j < size; j++) {
+            for (int j = i + 1; j < size; j++) {
                 ip2s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
                 for (int a = 0; a < 4; a++) {
                     ip2s->address[a] = protocol_only[j]->frame_data[26 + a];
@@ -311,9 +326,14 @@ int find_first_not_full_packet(FRAME **protocol_only, int size, FILE *output) {
                 port2s = hex_to_dec(protocol_only[j]->frame_data, 35 + protocol_only[j]->offset);
                 port2d = hex_to_dec(protocol_only[j]->frame_data, 37 + protocol_only[j]->offset);
 
-                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) &&
-                    is_fin(protocol_only[j])) {
-                    break;
+                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)) {
+                    if(is_fin(protocol_only[j])){
+                        (*number_of_all) = 0;
+                        break;
+                    }
+                    else{
+                        (*number_of_all)++;
+                    }
                 } else {
                     if (j == size - 1) {
                         fprintf(output, "Prvá neúplná komunikácia bola začatá SYN packetom:\n");
@@ -329,7 +349,7 @@ int find_first_not_full_packet(FRAME **protocol_only, int size, FILE *output) {
     return -1;
 }
 
-void print_not_full(FRAME **protocol_only, int size, FILE *output, int start){
+void print_not_full(FRAME **protocol_only, int size, FILE *output, int start, int number_of_all){
     IP_ADRESS *ip1s;
     IP_ADRESS *ip1d;
     IP_ADRESS *ip2s;
@@ -338,6 +358,7 @@ void print_not_full(FRAME **protocol_only, int size, FILE *output, int start){
     int port1d;
     int port2s;
     int port2d;
+    int to_be_print_number = 0;
 
     ip1s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
     for (int a = 0; a < 4; a++) {
@@ -365,7 +386,10 @@ void print_not_full(FRAME **protocol_only, int size, FILE *output, int start){
         port2d = hex_to_dec(protocol_only[j]->frame_data, 37 + protocol_only[j]->offset);
 
         if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) || are_same_comunication_ack(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)) {
-            print_ipv4_frame(protocol_only[j], output);
+            if( (number_of_all < 20 || to_be_print_number < 10 || to_be_print_number > number_of_all - 10) && is_fin(protocol_only[j]) ==  0){
+                print_ipv4_frame(protocol_only[j], output);
+                to_be_print_number++;
+            }
         }
     }
 }
