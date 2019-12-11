@@ -144,7 +144,6 @@ void print_icmp_single(FRAME **protocol_only, int size, FILE *output){
     IP_ADRESS *ip2s;
     IP_ADRESS *ip2d;
     int type1;
-    int type2;
 
     fprintf(output,
             "--------------------------------------------------------------------------------------------\n");

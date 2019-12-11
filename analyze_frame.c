@@ -44,11 +44,11 @@ void print_ipv4_frame(FRAME *frame, FILE *output){
     fprintf(output, "IPV4\n");
 
     find_protocol(frame, output);
-    if(is_icmp(frame) == 0){
-        print_ports(frame, output);
+    if(is_icmp(frame)){
+        print_type(frame, output);
     }
     else{
-        print_type(frame, output);
+        print_ports(frame, output);
     }
     print_data(frame->frame_data, frame->frame_wrapper->caplen, output);
 }
@@ -57,7 +57,7 @@ FRAME** print_arp_frames(FRAME *frame, FILE *output, FRAME** arp_duo){
     print_frame_info(frame, output);
     fprintf(output, "ARP\n");
     print_data(frame->frame_data, frame->frame_wrapper->caplen, output);
-    if(frame->frame_data[21] == 0x01){
+    /*if(frame->frame_data[21] == 0x01){
         //mam request
         if(arp_duo[1] != NULL){
             arp_duo[1] = NULL;
@@ -70,7 +70,7 @@ FRAME** print_arp_frames(FRAME *frame, FILE *output, FRAME** arp_duo){
         printf("%d frame (requestt) <-> %d frame (reply)", arp_duo[0]->frame_number, arp_duo[1]->frame_number);
         arp_duo[0] = NULL;
         arp_duo[1] = NULL;
-    }
+    }*/
     return arp_duo;
 }
 

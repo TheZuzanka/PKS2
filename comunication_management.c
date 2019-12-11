@@ -2,6 +2,14 @@
 
 #include "header.h"
 
+void free_protocol_only(FRAME** protocol_only, int* size){
+    for(int i = 0; i < *size; i++){
+        free(protocol_only[i]);
+    }
+    free(protocol_only);
+    *size = 0;
+}
+
 FRAME* create_element(int frame_number, struct pcap_pkthdr *frame_wrapper, u_char *frame_data){
     FRAME *new_element = (FRAME*)malloc(sizeof(FRAME));
     new_element->frame_wrapper = (struct pcap_pkthdr*)malloc(sizeof(struct pcap_pkthdr));

@@ -9,6 +9,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ALL 1
+#define HTTP 2
+#define HTTPS 3
+#define TELNET 4
+#define SSH 5
+#define FTP_R 6
+#define FTP_D 7
+#define TFTP 8
+#define ICMP 9
+#define ARP 10
+#define EXIT 11
+
 typedef struct frame{
     int frame_number;
     struct pcap_pkthdr *frame_wrapper;
@@ -39,6 +51,7 @@ void close_ieee_file(FILE* ieee_file);
 FRAME* create_element(int frame_number, struct pcap_pkthdr *frame_wrapper, u_char *frame_data);
 FRAME* create_linked_list(char* file_name);
 void print_linked_list(FRAME *header, FILE *output, IP_ADRESS** ip_adresses, FRAME** arp_duo);
+void free_protocol_only(FRAME** protocol_only, int* size);
 
 //from printing_info.c
 void print_frame_length(FRAME* frame, FILE* output);
