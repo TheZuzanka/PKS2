@@ -53,8 +53,10 @@ void print_first_full(FRAME** protocol_only, int size, FILE* output);
 int hex_to_dec_1(const u_char *frame_data, int index);
 int hex_to_dec(const u_char *frame_data, int starting_index);
 void print_ports(FRAME* frame, FILE *output);
-void print_first_not_full(FRAME** protocol_only, int size, FILE* output);
+int find_first_not_full_packet(FRAME **protocol_only, int size, FILE *output);
+void print_not_full(FRAME **protocol_only, int size, FILE *output, int start);
 void print_protocol_array(FRAME** protocol_only, int size, FILE* output);
+void print_first_not_full(FRAME **protocol_only, int size, FILE *output);
 
 //from analyze_frame
 int is_ipv4(FRAME* frame, IP_ADRESS **adresses);

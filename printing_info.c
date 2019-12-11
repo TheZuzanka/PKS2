@@ -79,7 +79,7 @@ void eth_or_802(FRAME *frame, FILE *output) {
                 found = 1;
             }
         }
-        if (found == 0){
+        if (found == 0) {
             fprintf(output, "IEEE - LLC\n");
         }
     }
@@ -123,36 +123,35 @@ void print_ip_sc_dst(FRAME *frame, FILE *output) {
 /*void print_LLC_sub(FRAME* frame){
     if(hex_to_dec_1(frame->frame_data, 15) == 99)
 }
-
 void print_LLC_SNAP_sub(FRAME* frame){
     //
 }*/
 
-FRAME** filtre_protocol(FRAME* header, char* protocol, int* size){
-    FILE* ports = open_port_file();
+FRAME **filtre_protocol(FRAME *header, char *protocol, int *size) {
+    FILE *ports = open_port_file();
     char port_name[10];
     int port_number;
-    FRAME* actual = header;
+    FRAME *actual = header;
     int counter = 0;
     (*size) = 0;
 
-    while(actual != NULL){
+    while (actual != NULL) {
         (*size)++;
         actual = actual->next;
     }
     actual = header;
-    FRAME** protocol_only = (FRAME**)malloc((*size) * sizeof(FRAME*));
+    FRAME **protocol_only = (FRAME **) malloc((*size) * sizeof(FRAME *));
 
     ////////////////////////////
 
-    for(int i = 0; i < *size; i++){
-        protocol_only[i] = (FRAME*)malloc(sizeof(FRAME));
+    for (int i = 0; i < *size; i++) {
+        protocol_only[i] = (FRAME *) malloc(sizeof(FRAME));
     }
 
-    while(fscanf(ports, "%d", &port_number) != EOF){
+    while (fscanf(ports, "%d", &port_number) != EOF) {
         fscanf(ports, "%s", port_name);
 
-        if(strcmp(protocol, port_name) == 0){
+        if (strcmp(protocol, port_name) == 0) {
             break;
         }
     }
@@ -160,11 +159,11 @@ FRAME** filtre_protocol(FRAME* header, char* protocol, int* size){
     *size = 0;
     counter = 0;
 
-    while(actual != NULL){
+    while (actual != NULL) {
         int source_port = hex_to_dec(actual->frame_data, 35 + actual->offset);
         int dest_port = hex_to_dec(actual->frame_data, 37 + actual->offset);
 
-        if(source_port == port_number || dest_port == port_number){
+        if (source_port == port_number || dest_port == port_number) {
             protocol_only[counter++] = actual;
             (*size)++;
         }
@@ -175,83 +174,86 @@ FRAME** filtre_protocol(FRAME* header, char* protocol, int* size){
     return protocol_only;
 }
 
-void print_protocol_array(FRAME** protocol_only, int size, FILE* output){
-    for(int i = 0; i < size; i++){
+void print_protocol_array(FRAME **protocol_only, int size, FILE *output) {
+    for (int i = 0; i < size; i++) {
         print_ipv4_frame(protocol_only[i], output);
     }
 }
 
-void print_ports(FRAME* frame, FILE *output){
-    int source =  hex_to_dec(frame->frame_data, 35);
+void print_ports(FRAME *frame, FILE *output) {
+    int source = hex_to_dec(frame->frame_data, 35);
     int destination = hex_to_dec(frame->frame_data, 37);
 
     fprintf(output, "Zdrojovy port = %d\n", source);
     fprintf(output, "Cielovy port = %d\n", destination);
 }
 
-void print_first_full(FRAME** protocol_only, int size, FILE* output){
-    IP_ADRESS* ip1s;
-    IP_ADRESS* ip1d;
-    IP_ADRESS* ip2s;
-    IP_ADRESS* ip2d;
+void print_first_full(FRAME **protocol_only, int size, FILE *output) {
+    IP_ADRESS *ip1s;
+    IP_ADRESS *ip1d;
+    IP_ADRESS *ip2s;
+    IP_ADRESS *ip2d;
     int port1s;
     int port1d;
     int port2s;
     int port2d;
 
-    for(int i = 0; i < size - 1; i++){
-        ip1s = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-        for(int a = 0; a < 4; a++){
+    for (int i = 0; i < size - 1; i++) {
+        ip1s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+        for (int a = 0; a < 4; a++) {
             ip1s->address[a] = protocol_only[i]->frame_data[26 + a];
         }
 
-        ip1d = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-        for(int a = 0; a < 4; a++){
+        ip1d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+        for (int a = 0; a < 4; a++) {
             ip1d->address[a] = protocol_only[i]->frame_data[30 + a];
         }
-        port1s =  hex_to_dec_1(protocol_only[i]->frame_data, 34 + protocol_only[i]->offset);
+        port1s = hex_to_dec_1(protocol_only[i]->frame_data, 34 + protocol_only[i]->offset);
         port1d = hex_to_dec_1(protocol_only[i]->frame_data, 36 + protocol_only[i]->offset);
 
-        if( is_syn(protocol_only[i]) ){
-            for(int j = i + 1; j < size; j++){
-                ip2s = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-                for(int a = 0; a < 4; a++){
+        if (is_syn(protocol_only[i])) {
+            for (int j = i + 1; j < size; j++) {
+                ip2s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+                for (int a = 0; a < 4; a++) {
                     ip2s->address[a] = protocol_only[j]->frame_data[26 + a];
                 }
 
-                ip2d = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-                for(int a = 0; a < 4; a++){
+                ip2d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+                for (int a = 0; a < 4; a++) {
                     ip2d->address[a] = protocol_only[j]->frame_data[30 + a];
                 }
-                port2s =  hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
+                port2s = hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
                 port2d = hex_to_dec_1(protocol_only[j]->frame_data, 36 + protocol_only[j]->offset);
 
-                if(are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) && is_fin(protocol_only[j])){
+                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) &&
+                    is_fin(protocol_only[j])) {
                     fprintf(output, "Prvá úplná komunikácia je ohraničená:\n\n");
                     fprintf(output, "Prvým SYN packetom:\n");
                     print_ipv4_frame(protocol_only[i], output);
                 }
             }
-            for(int j = i + 1; j < size; j++){
-                ip2s = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-                for(int a = 0; a < 4; a++){
+            for (int j = i + 1; j < size; j++) {
+                ip2s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+                for (int a = 0; a < 4; a++) {
                     ip2s->address[a] = protocol_only[j]->frame_data[26 + a];
                 }
 
-                ip2d = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-                for(int a = 0; a < 4; a++){
+                ip2d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+                for (int a = 0; a < 4; a++) {
                     ip2d->address[a] = protocol_only[j]->frame_data[30 + a];
                 }
-                port2s =  hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
+                port2s = hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
                 port2d = hex_to_dec_1(protocol_only[j]->frame_data, 36 + protocol_only[j]->offset);
 
-                if(are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) || are_same_comunication_ack(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)){
+                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) ||
+                    are_same_comunication_ack(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)) {
                     print_ipv4_frame(protocol_only[j], output);
 
-                    if(is_fin(protocol_only[j])){
+                    if (is_fin(protocol_only[j])) {
                         fprintf(output, "\n\nPosledným FIN packetom:\n");
                         print_ipv4_frame(protocol_only[j], output);
-                        fprintf(output, "--------------------------------------------------------------------------------------------\n");
+                        fprintf(output,
+                                "--------------------------------------------------------------------------------------------\n");
                         return;
                     }
                 }
@@ -263,54 +265,60 @@ void print_first_full(FRAME** protocol_only, int size, FILE* output){
     fprintf(output, "V súbore sa nenachádza žiadna ukončená komunikácia.\n");
 }
 
-void print_first_not_full(FRAME** protocol_only, int size, FILE* output){
-    IP_ADRESS* ip1s;
-    IP_ADRESS* ip1d;
-    IP_ADRESS* ip2s;
-    IP_ADRESS* ip2d;
+void print_first_not_full(FRAME **protocol_only, int size, FILE *output){
+    int first;
+    if(( first = find_first_not_full_packet(protocol_only, size, output) ) != -1){
+        print_not_full(protocol_only, size, output, first);
+    }
+}
+
+int find_first_not_full_packet(FRAME **protocol_only, int size, FILE *output) {
+    IP_ADRESS *ip1s;
+    IP_ADRESS *ip1d;
+    IP_ADRESS *ip2s;
+    IP_ADRESS *ip2d;
     int port1s;
     int port1d;
     int port2s;
     int port2d;
 
-    for(int i = 0; i < size - 1; i++){
-        ip1s = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-        for(int a = 0; a < 4; a++){
+    for (int i = 0; i < size - 1; i++) {
+        ip1s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+        for (int a = 0; a < 4; a++) {
             ip1s->address[a] = protocol_only[i]->frame_data[26 + a];
         }
 
-        ip1d = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-        for(int a = 0; a < 4; a++){
+        ip1d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+        for (int a = 0; a < 4; a++) {
             ip1d->address[a] = protocol_only[i]->frame_data[30 + a];
         }
-        port1s =  hex_to_dec(protocol_only[i]->frame_data, 35 + protocol_only[i]->offset);
+        port1s = hex_to_dec(protocol_only[i]->frame_data, 35 + protocol_only[i]->offset);
         port1d = hex_to_dec(protocol_only[i]->frame_data, 37 + protocol_only[i]->offset);
 
-        if( is_syn(protocol_only[i]) && is_syn_ack(protocol_only[i]) != 1){
+        if (is_syn(protocol_only[i]) && is_syn_ack(protocol_only[i]) != 1) {
             int test = protocol_only[i]->frame_number;
             //
-            for(int j = 0; j < size; j++){
-                ip2s = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-                for(int a = 0; a < 4; a++){
+            for (int j = 0; j < size; j++) {
+                ip2s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+                for (int a = 0; a < 4; a++) {
                     ip2s->address[a] = protocol_only[j]->frame_data[26 + a];
                 }
 
-                ip2d = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
-                for(int a = 0; a < 4; a++){
+                ip2d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+                for (int a = 0; a < 4; a++) {
                     ip2d->address[a] = protocol_only[j]->frame_data[30 + a];
                 }
-                port2s =  hex_to_dec(protocol_only[j]->frame_data, 35 + protocol_only[j]->offset);
+                port2s = hex_to_dec(protocol_only[j]->frame_data, 35 + protocol_only[j]->offset);
                 port2d = hex_to_dec(protocol_only[j]->frame_data, 37 + protocol_only[j]->offset);
 
-                if(are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) && is_fin(protocol_only[j])){
+                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) &&
+                    is_fin(protocol_only[j])) {
                     break;
-                }
-                else{
-                    if(j == size - 1){
+                } else {
+                    if (j == size - 1) {
                         fprintf(output, "Prvá neúplná komunikácia bola začatá SYN packetom:\n");
                         print_ipv4_frame(protocol_only[i], output);
-                        fprintf(output, "--------------------------------------------------------------------------------------------\n");
-                        return;
+                        return i;
                     }
                 }
             }
@@ -318,5 +326,46 @@ void print_first_not_full(FRAME** protocol_only, int size, FILE* output){
     }
 
     fprintf(output, "V súbore sa nenachádza žiadna neukončená komunikácia.\n");
+    return -1;
 }
 
+void print_not_full(FRAME **protocol_only, int size, FILE *output, int start){
+    IP_ADRESS *ip1s;
+    IP_ADRESS *ip1d;
+    IP_ADRESS *ip2s;
+    IP_ADRESS *ip2d;
+    int port1s;
+    int port1d;
+    int port2s;
+    int port2d;
+
+    ip1s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+    for (int a = 0; a < 4; a++) {
+        ip1s->address[a] = protocol_only[start]->frame_data[26 + a];
+    }
+
+    ip1d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+    for (int a = 0; a < 4; a++) {
+        ip1d->address[a] = protocol_only[start]->frame_data[30 + a];
+    }
+    port1s = hex_to_dec(protocol_only[start]->frame_data, 35 + protocol_only[start]->offset);
+    port1d = hex_to_dec(protocol_only[start]->frame_data, 37 + protocol_only[start]->offset);
+
+    for (int j = start + 1; j < size; j++) {
+        ip2s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+        for (int a = 0; a < 4; a++) {
+            ip2s->address[a] = protocol_only[j]->frame_data[26 + a];
+        }
+
+        ip2d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+        for (int a = 0; a < 4; a++) {
+            ip2d->address[a] = protocol_only[j]->frame_data[30 + a];
+        }
+        port2s = hex_to_dec(protocol_only[j]->frame_data, 35 + protocol_only[j]->offset);
+        port2d = hex_to_dec(protocol_only[j]->frame_data, 37 + protocol_only[j]->offset);
+
+        if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) || are_same_comunication_ack(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)) {
+            print_ipv4_frame(protocol_only[j], output);
+        }
+    }
+}
