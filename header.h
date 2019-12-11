@@ -109,3 +109,10 @@ FRAME** find_only_icmp(FRAME *header, char *protocol, int *size);
 void print_duo_icmp(FRAME **protocol_only, int size, FILE *output);
 void print_type(FRAME* frame, FILE* output);
 void print_icmp_single(FRAME **protocol_only, int size, FILE *output);
+
+//from handling_tftp.c
+int find_port_number_tftp();
+int is_tftp(FRAME *frame, int port_number, int protocol_num);
+FRAME *find_first_tftp(FRAME *list_of_packets, int port_num, int protocol_num);
+void print_tftp(FRAME *list_of_packets, FILE* output);
+FRAME *find_first_reply(FRAME *list_of_packets, FRAME *first, int protocol_num);

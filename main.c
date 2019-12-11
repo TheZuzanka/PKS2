@@ -1,7 +1,7 @@
 #include "header.h"
 
 int main() {
-    FRAME* list_of_frames = create_linked_list("trace-26.pcap");
+    FRAME* list_of_frames = create_linked_list("trace-15.pcap");
     IP_ADRESS* list_of_adresses = NULL;
     FILE* output = open_txt_file();
     FRAME** protocol_only = NULL;
@@ -72,6 +72,8 @@ int main() {
                 break;
 
             case TFTP:
+                free_protocol_only(protocol_only, &size);
+                print_tftp(list_of_frames, output);
                 break;
 
             case ICMP:
