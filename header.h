@@ -92,3 +92,6 @@ int is_tcp(FRAME* frame);
 
 //from handling_icmp.c
 int is_icmp(FRAME* frame);
+FRAME** find_only_icmp(FRAME *header, char *protocol, int *size);
+void print_duo_icmp(FRAME **protocol_only, int size, FILE *output);
+void print_type(FRAME* frame, FILE* output);

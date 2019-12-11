@@ -21,17 +21,77 @@ int is_icmp(FRAME *frame) {
     return 0;
 }
 
-void print_duo(FRAME **protocol_only, int size, FILE *output) {
+FRAME** find_only_icmp(FRAME *header, char *protocol, int *size){
+    FILE *protocols = open_protocols_file();
+    char protocol_name[10];
+    int protocol_number;
+    FRAME *actual = header;
+    int counter = 0;
+    (*size) = 0;
+
+    while (actual != NULL) {
+        (*size)++;
+        actual = actual->next;
+    }
+    actual = header;
+    FRAME **protocol_only = (FRAME **) malloc((*size) * sizeof(FRAME *));
+
+    ////////////////////////////
+
+    for (int i = 0; i < *size; i++) {
+        protocol_only[i] = (FRAME *) malloc(sizeof(FRAME));
+    }
+
+    while (fscanf(protocols, "%d", &protocol_number) != EOF) {
+        fscanf(protocols, "%s", protocol_name);
+
+        if (strcmp(protocol, protocol_name) == 0) {
+            break;
+        }
+    }
+    close_port_file(protocols);
+    *size = 0;
+    counter = 0;
+
+    while (actual != NULL) {
+        if (is_ipv4_not_add(actual) && is_icmp(actual)) {
+            protocol_only[counter++] = actual;
+            (*size)++;
+        }
+
+        actual = actual->next;
+    }
+
+    return protocol_only;
+}
+
+void print_type(FRAME* frame, FILE* output){
+    int type = hex_to_dec_1(frame->frame_data, 34 + frame->offset);;
+    switch(type){
+        case 0:
+            fprintf(output, "Typ = Echo reply\n");
+            break;
+        case 3:
+            fprintf(output, "Typ = Destination unreachable\n");
+            break;
+        case 8:
+            fprintf(output, "Typ = Echo\n");
+            break;
+        case 11:
+            fprintf(output, "Typ = Time exceeded\n");
+            break;
+        default:
+            fprintf(output, "Typ = Other (%d)\n", type);
+    }
+}
+
+void print_duo_icmp(FRAME **protocol_only, int size, FILE *output) {
     IP_ADRESS *ip1s;
     IP_ADRESS *ip1d;
     IP_ADRESS *ip2s;
     IP_ADRESS *ip2d;
-    int port1s;
-    int port1d;
-    int port2s;
-    int port2d;
-    int number_of_all = 0;
-    int to_be_print_number = 0;
+    int type1;
+    int type2;
 
     for (int i = 0; i < size - 1; i++) {
         ip1s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
@@ -43,10 +103,10 @@ void print_duo(FRAME **protocol_only, int size, FILE *output) {
         for (int a = 0; a < 4; a++) {
             ip1d->address[a] = protocol_only[i]->frame_data[30 + a];
         }
-        port1s = hex_to_dec_1(protocol_only[i]->frame_data, 34 + protocol_only[i]->offset);
-        port1d = hex_to_dec_1(protocol_only[i]->frame_data, 36 + protocol_only[i]->offset);
+        type1 = hex_to_dec_1(protocol_only[i]->frame_data, 34 + protocol_only[i]->offset);
 
-        if (is_syn(protocol_only[i])) {
+        if (type1 == 8) {
+            //mam echo
             for (int j = i + 1; j < size; j++) {
                 ip2s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
                 for (int a = 0; a < 4; a++) {
@@ -57,53 +117,22 @@ void print_duo(FRAME **protocol_only, int size, FILE *output) {
                 for (int a = 0; a < 4; a++) {
                     ip2d->address[a] = protocol_only[j]->frame_data[30 + a];
                 }
-                port2s = hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
-                port2d = hex_to_dec_1(protocol_only[j]->frame_data, 36 + protocol_only[j]->offset);
+                type2 = hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
 
-                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)) {
-                    if (is_fin(protocol_only[j])) {
-                        fprintf(output, "Prvá úplná komunikácia je ohraničená:\n\n");
-                        fprintf(output, "Prvým SYN packetom:\n");
-                        print_ipv4_frame(protocol_only[i], output);
-                        to_be_print_number++;
-                    }
-                    number_of_all++;
-                }
-                if (are_same_comunication_ack(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)) {
-                    number_of_all++;
-                }
-
-            }
-            for (int j = i + 1; j < size; j++) {
-                ip2s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
-                for (int a = 0; a < 4; a++) {
-                    ip2s->address[a] = protocol_only[j]->frame_data[26 + a];
-                }
-
-                ip2d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
-                for (int a = 0; a < 4; a++) {
-                    ip2d->address[a] = protocol_only[j]->frame_data[30 + a];
-                }
-                port2s = hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
-                port2d = hex_to_dec_1(protocol_only[j]->frame_data, 36 + protocol_only[j]->offset);
-
-                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) ||
-                    are_same_comunication_ack(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)) {
-
-                    if ((number_of_all < 20 || to_be_print_number < 10 || to_be_print_number > number_of_all - 10) &&
-                        is_fin(protocol_only[j]) == 0) {
-                        print_ipv4_frame(protocol_only[j], output);
-                    }
-                    to_be_print_number++;
-
-                    if (is_fin(protocol_only[j])) {
-                        fprintf(output, "\n\nPosledným FIN packetom:\n");
-                        print_ipv4_frame(protocol_only[j], output);
+                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, 0, 0, 0, 0)) {
+                    if(type2 == 0 || type2 == 3 || type2 == 11){
                         fprintf(output,
                                 "--------------------------------------------------------------------------------------------\n");
-                        return;
+                        fprintf(output, "Echo posielal rámec:\n");
+                        print_ipv4_frame(protocol_only[i], output);
+                        fprintf(output,
+                                "--------------------------------------------------------------------------------------------\n");
+                        fprintf(output, "Reply posielal rámec:\n");
+                        print_ipv4_frame(protocol_only[j], output);
+                        break;
                     }
                 }
+
             }
         }
     }

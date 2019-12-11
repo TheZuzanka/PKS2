@@ -44,7 +44,12 @@ void print_ipv4_frame(FRAME *frame, FILE *output){
     fprintf(output, "IPV4\n");
 
     find_protocol(frame, output);
-    print_ports(frame, output);
+    if(is_icmp(frame) == 0){
+        print_ports(frame, output);
+    }
+    else{
+        print_type(frame, output);
+    }
     print_data(frame->frame_data, frame->frame_wrapper->caplen, output);
 }
 
