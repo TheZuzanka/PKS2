@@ -16,6 +16,7 @@ int main() {
     //print_first_not_full(http_only, size, output);
 
     print_duo_icmp(http_only, size, output);
+    print_icmp_single(http_only, size, output);
 
     close_txt_file(output);
     return 0;

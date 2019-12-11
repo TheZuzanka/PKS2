@@ -95,3 +95,4 @@ int is_icmp(FRAME* frame);
 FRAME** find_only_icmp(FRAME *header, char *protocol, int *size);
 void print_duo_icmp(FRAME **protocol_only, int size, FILE *output);
 void print_type(FRAME* frame, FILE* output);
+void print_icmp_single(FRAME **protocol_only, int size, FILE *output);

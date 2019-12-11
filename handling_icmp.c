@@ -137,3 +137,53 @@ void print_duo_icmp(FRAME **protocol_only, int size, FILE *output) {
         }
     }
 }
+
+void print_icmp_single(FRAME **protocol_only, int size, FILE *output){
+    IP_ADRESS *ip1s;
+    IP_ADRESS *ip1d;
+    IP_ADRESS *ip2s;
+    IP_ADRESS *ip2d;
+    int type1;
+    int type2;
+
+    fprintf(output,
+            "--------------------------------------------------------------------------------------------\n");
+    fprintf(output, "Nespárovené:\n");
+
+    for (int i = 0; i < size - 1; i++) {
+        ip1s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+        for (int a = 0; a < 4; a++) {
+            ip1s->address[a] = protocol_only[i]->frame_data[26 + a];
+        }
+
+        ip1d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+        for (int a = 0; a < 4; a++) {
+            ip1d->address[a] = protocol_only[i]->frame_data[30 + a];
+        }
+        type1 = hex_to_dec_1(protocol_only[i]->frame_data, 34 + protocol_only[i]->offset);
+
+        if (type1 == 8) {
+            //mam echo
+            for (int j = i + 1; j < size; j++) {
+                ip2s = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+                for (int a = 0; a < 4; a++) {
+                    ip2s->address[a] = protocol_only[j]->frame_data[26 + a];
+                }
+
+                ip2d = (IP_ADRESS *) malloc(sizeof(IP_ADRESS));
+                for (int a = 0; a < 4; a++) {
+                    ip2d->address[a] = protocol_only[j]->frame_data[30 + a];
+                }
+
+                if (are_same_comunication(ip1s, ip1d, ip2s, ip2d, 0, 0, 0, 0)) {
+                    break;
+                }
+
+                if(j == size - 1){
+                    print_ipv4_frame(protocol_only[i], output);
+                }
+
+            }
+        }
+    }
+}
