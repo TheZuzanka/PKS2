@@ -45,3 +45,22 @@ int is_syn_ack(FRAME *frame){
         return 0;
     }
 }
+
+int is_tcp(FRAME* frame){
+    FILE* protocols = open_protocols_file();
+    char protocol_name[10];
+    int protocol_number;
+
+    while( fscanf(protocols, "%d", &protocol_number) != EOF){
+        fscanf(protocols, "%s", protocol_name);
+
+        if(frame->frame_data[23] == protocol_number){
+            if(strcmp(protocol_name, "TCP") == 0){
+                return  1;
+            }
+        }
+    }
+
+    close_protocols_file(protocols);
+    return 0;
+}

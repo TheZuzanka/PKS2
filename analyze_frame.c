@@ -2,6 +2,18 @@
 
 #include "header.h"
 
+int is_ipv4_not_add(FRAME* frame){
+    int version = (frame->frame_data[14] / 16);
+    if(hex_to_dec(frame->frame_data, 13) == 2048){
+        if (version == 4){
+            return 1;
+        }
+    }
+    else{
+        return  0;
+    }
+}
+
 int is_ipv4(FRAME* frame, IP_ADRESS **adresses){
     int version = (frame->frame_data[14] / 16);
     if(hex_to_dec(frame->frame_data, 13) == 2048){

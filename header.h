@@ -83,8 +83,12 @@ void free_frames_list(FRAME* header);
 int are_same_comunication(IP_ADRESS* ip1s, IP_ADRESS* ip1d, IP_ADRESS* ip2s, IP_ADRESS* ip2d, int port1s, int port1d, int port2s, int port2d);
 int are_same_comunication_ack(IP_ADRESS* ip1s, IP_ADRESS* ip1d, IP_ADRESS* ip2s, IP_ADRESS* ip2d, int port1s, int port1d, int port2s, int port2d);
 
-//from handling_arp.c
+//from handling_tcp.c
 int is_syn(FRAME* frame);
 int is_fin(FRAME* frame);
 int is_reset(FRAME* frame);
 int is_syn_ack(FRAME *frame);
+int is_tcp(FRAME* frame);
+
+//from handling_icmp.c
+int is_icmp(FRAME* frame);

@@ -163,7 +163,7 @@ FRAME **filtre_protocol(FRAME *header, char *protocol, int *size) {
         int source_port = hex_to_dec(actual->frame_data, 35 + actual->offset);
         int dest_port = hex_to_dec(actual->frame_data, 37 + actual->offset);
 
-        if (source_port == port_number || dest_port == port_number) {
+        if (is_ipv4_not_add(actual) && is_tcp(actual) &&(source_port == port_number || dest_port == port_number)) {
             protocol_only[counter++] = actual;
             (*size)++;
         }

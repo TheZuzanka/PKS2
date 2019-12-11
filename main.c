@@ -10,11 +10,7 @@ int main() {
 
     //print_linked_list(list_of_frames, output, &list_of_adresses, arp_duo);
     http_only = filtre_protocol(list_of_frames, "HTTP", &size);
-
-    /*for(int i = 0; i < size; i++){
-        printf("ramec cislo = %d\n", http_only[i]->frame_number);
-    }*/
-
+    //print_protocol_array(http_only, size, output);
     print_first_full(http_only, size, output);
     print_first_not_full(http_only, size, output);
 
