@@ -54,6 +54,7 @@ int hex_to_dec_1(const u_char *frame_data, int index);
 int hex_to_dec(const u_char *frame_data, int starting_index);
 void print_ports(FRAME* frame, FILE *output);
 void print_first_not_full(FRAME** protocol_only, int size, FILE* output);
+void print_protocol_array(FRAME** protocol_only, int size, FILE* output);
 
 //from analyze_frame
 int is_ipv4(FRAME* frame, IP_ADRESS **adresses);
@@ -62,6 +63,8 @@ void print_ipv4_frame(FRAME *frame, FILE *output);
 FRAME** print_arp_frames(FRAME *frame, FILE *output, FRAME** arp_duo);
 int find_protocol(FRAME* frame, FILE* output);
 int find_port(FRAME* frame, FILE* output);
+int is_ipv4_not_add(FRAME* frame);
+
 
 //from ip_adress_management.c
 IP_ADRESS* is_presented_in_list(IP_ADRESS *list, IP_ADRESS *requested);

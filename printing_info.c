@@ -175,6 +175,12 @@ FRAME** filtre_protocol(FRAME* header, char* protocol, int* size){
     return protocol_only;
 }
 
+void print_protocol_array(FRAME** protocol_only, int size, FILE* output){
+    for(int i = 0; i < size; i++){
+        print_ipv4_frame(protocol_only[i], output);
+    }
+}
+
 void print_ports(FRAME* frame, FILE *output){
     int source =  hex_to_dec(frame->frame_data, 35);
     int destination = hex_to_dec(frame->frame_data, 37);
@@ -207,7 +213,7 @@ void print_first_full(FRAME** protocol_only, int size, FILE* output){
         port1d = hex_to_dec_1(protocol_only[i]->frame_data, 36 + protocol_only[i]->offset);
 
         if( is_syn(protocol_only[i]) ){
-            for(int j = 0; j < size; j++){
+            for(int j = i + 1; j < size; j++){
                 ip2s = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
                 for(int a = 0; a < 4; a++){
                     ip2s->address[a] = protocol_only[j]->frame_data[26 + a];
@@ -224,14 +230,34 @@ void print_first_full(FRAME** protocol_only, int size, FILE* output){
                     fprintf(output, "Prvá úplná komunikácia je ohraničená:\n\n");
                     fprintf(output, "Prvým SYN packetom:\n");
                     print_ipv4_frame(protocol_only[i], output);
+                }
+            }
+            for(int j = i + 1; j < size; j++){
+                ip2s = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
+                for(int a = 0; a < 4; a++){
+                    ip2s->address[a] = protocol_only[j]->frame_data[26 + a];
+                }
 
-                    fprintf(output, "\n\nPosledným FIN packetom:\n");
+                ip2d = (IP_ADRESS*)malloc(sizeof(IP_ADRESS));
+                for(int a = 0; a < 4; a++){
+                    ip2d->address[a] = protocol_only[j]->frame_data[30 + a];
+                }
+                port2s =  hex_to_dec_1(protocol_only[j]->frame_data, 34 + protocol_only[j]->offset);
+                port2d = hex_to_dec_1(protocol_only[j]->frame_data, 36 + protocol_only[j]->offset);
+
+                if(are_same_comunication(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d) || are_same_comunication_ack(ip1s, ip1d, ip2s, ip2d, port1s, port1d, port2s, port2d)){
                     print_ipv4_frame(protocol_only[j], output);
-                    fprintf(output, "--------------------------------------------------------------------------------------------\n");
-                    return;
+
+                    if(is_fin(protocol_only[j])){
+                        fprintf(output, "\n\nPosledným FIN packetom:\n");
+                        print_ipv4_frame(protocol_only[j], output);
+                        fprintf(output, "--------------------------------------------------------------------------------------------\n");
+                        return;
+                    }
                 }
             }
         }
+
     }
 
     fprintf(output, "V súbore sa nenachádza žiadna ukončená komunikácia.\n");
@@ -293,8 +319,4 @@ void print_first_not_full(FRAME** protocol_only, int size, FILE* output){
 
     fprintf(output, "V súbore sa nenachádza žiadna neukončená komunikácia.\n");
 }
-
-/*void print_TCP(FRAME* header, char* protocol){
-    //
-}*/
 
